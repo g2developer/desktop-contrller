@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const socketManager = require('./socketManager');
+const logger = require('../utils/logger');
 
 let expressApp;
 let server;
@@ -29,6 +30,21 @@ function init(configStore, window) {
     }
   });
   
+  // 한글 인코딩 설정
+  expressApp.use(express.json({
+    charset: 'utf-8'
+  }));
+  expressApp.use(express.urlencoded({
+    extended: true,
+    charset: 'utf-8'
+  }));
+  
+  // 기본 헤더 설정
+  expressApp.use((req, res, next) => {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    next();
+  });
+  
   // 소켓 매니저 초기화
   socketManager.setSocketIO(io);
 }
@@ -47,7 +63,7 @@ function startServer() {
     
     // 서버 시작
     server.listen(port, () => {
-      console.log(`서버가 포트 ${port}에서 실행 중입니다`);
+      logger.log(`서버가 포트 ${port}에서 실행 중입니다`);
       isServerRunning = true;
       
       // 서버 상태 업데이트
@@ -62,7 +78,7 @@ function startServer() {
     
     return true;
   } catch (err) {
-    console.error('서버 시작 오류:', err);
+    logger.error('서버 시작 오류:', err);
     return false;
   }
 }
@@ -84,7 +100,7 @@ function stopServer() {
     
     // 서버 종료
     server.close(() => {
-      console.log('서버가 종료되었습니다.');
+      logger.log('서버가 종료되었습니다.');
       isServerRunning = false;
       
       // 연결된 클라이언트 목록 초기화
@@ -104,7 +120,7 @@ function stopServer() {
     
     return true;
   } catch (err) {
-    console.error('서버 종료 오류:', err);
+    logger.error('서버 종료 오류:', err);
     return false;
   }
 }

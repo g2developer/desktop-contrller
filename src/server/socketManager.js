@@ -2,6 +2,7 @@
 
 // 모듈 가져오기
 const userManager = require('../controllers/userManager');
+const logger = require('../utils/logger');
 
 // 변수 초기화
 let io;
@@ -39,7 +40,7 @@ function setupSocketEvents() {
   if (!io) return;
   
   io.on('connection', (socket) => {
-    console.log('새 클라이언트 연결:', socket.id);
+    logger.log('새 클라이언트 연결:', socket.id);
     
     // 클라이언트 정보 초기화
     const clientInfo = { 
@@ -161,7 +162,7 @@ function setupSocketEvents() {
             });
           }
         } catch (err) {
-          console.error('명령 실행 오류:', err);
+          logger.error('명령 실행 오류:', err);
           socket.emit('command-error', { 
             success: false, 
             message: err.message,
@@ -195,7 +196,7 @@ function setupSocketEvents() {
 
     // 연결 해제 처리
     socket.on('disconnect', () => {
-      console.log('클라이언트 연결 해제:', socket.id);
+      logger.log('클라이언트 연결 해제:', socket.id);
       
       const clientInfo = connectedClients[socket.id];
       const username = clientInfo ? clientInfo.username || '알 수 없음' : '알 수 없음';

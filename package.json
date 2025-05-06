@@ -4,19 +4,21 @@
   "description": "Desktop controller application (server)",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron . --dev",
+    "start": "set LANG=ko_KR.UTF-8 && chcp 65001 && electron .",
+    "dev": "set LANG=ko_KR.UTF-8 && chcp 65001 && electron . --dev",
     "build": "electron-builder",
     "postinstall": "electron-builder install-app-deps"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.6.1",
+    "@jitsi/robotjs": "^0.6.16",
     "electron-store": "^8.1.0",
-    "robotjs": "^0.6.0",
-    "screenshot-desktop": "^1.12.7"
+    "express": "^4.18.2",
+    "iconv-lite": "^0.6.3",
+    "public-ip": "^7.0.1",
+    "screenshot-desktop": "^1.12.7",
+    "socket.io": "^4.6.1"
   },
   "devDependencies": {
     "electron": "^25.3.1",

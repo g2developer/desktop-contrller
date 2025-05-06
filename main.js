@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
+const logger = require('./src/utils/logger'); // 출력 유틸리티 추가
 
 // 모듈 가져오기
 const serverManager = require('./src/server/serverManager');
@@ -32,6 +33,14 @@ app.whenReady().then(() => {
       preload: path.join(__dirname, 'preload.js')
     }
   });
+
+  // 부가 옵션 설정
+  app.commandLine.appendSwitch('lang', 'ko-KR');
+  app.commandLine.appendSwitch('force-text-direction', 'auto');
+  app.commandLine.appendSwitch('auto-detect-utf8', 'true');
+  
+  // 한글 인코딩 문제 해결을 위한 출력 인코딩 설정
+  process.env.LANG = 'ko_KR.UTF-8';
 
   // HTML 파일 로드
   mainWindow.loadFile('src/index.html');
