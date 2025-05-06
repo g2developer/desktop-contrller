@@ -1,6 +1,9 @@
 // configManager.js
 // 설정 관리 모듈
 
+// 상수 정의
+const DEFAULT_SERVER_PORT = 6000; // 기본 포트 번호를 3000에서 6000으로 변경
+
 const path = require('path');
 const { app } = require('electron');
 const os = require('os');
@@ -50,7 +53,7 @@ function init(configStore) {
 function initializeDefaultSettings() {
   // 서버 설정 초기화
   if (!store.has('serverPort')) {
-    store.set('serverPort', 3000);
+    store.set('serverPort', DEFAULT_SERVER_PORT);
   }
   
   if (!store.has('socketTimeout')) {
@@ -170,7 +173,7 @@ function deleteSetting(key) {
  * @returns {Object} 서버 정보
  */
 async function getServerInfo() {
-  const serverPort = store.get('serverPort') || 3000;
+  const serverPort = store.get('serverPort') || DEFAULT_SERVER_PORT;
   
   try {
     // 공개 IP 가져오기
@@ -275,5 +278,6 @@ module.exports = {
   getClaudeSettings,
   getCaptureSettings,
   getSecuritySettings,
-  resetSettings
+  resetSettings,
+  DEFAULT_SERVER_PORT // 상수 내보내기
 };

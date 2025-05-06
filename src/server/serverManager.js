@@ -3,6 +3,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const socketManager = require('./socketManager');
 const logger = require('../utils/logger');
+const { DEFAULT_SERVER_PORT } = require('../utils/configManager'); // 상수 가져오기
 
 let expressApp;
 let server;
@@ -59,7 +60,7 @@ function startServer() {
     if (isServerRunning) return true;
     
     // 설정에서 포트 가져오기
-    const port = store.get('serverPort') || 3000;
+    const port = store.get('serverPort') || DEFAULT_SERVER_PORT;
     
     // 서버 시작
     server.listen(port, () => {
@@ -130,7 +131,7 @@ function stopServer() {
  * @returns {Object} 서버 상태 정보
  */
 function getServerStatus() {
-  const port = store.get('serverPort') || 3000;
+  const port = store.get('serverPort') || DEFAULT_SERVER_PORT;
   return {
     running: isServerRunning,
     port: port,

@@ -332,7 +332,7 @@ function initSettingsForm() {
   // 설정 데이터 수신
   ipcRenderer.on('settings-data', (event, settings) => {
     // 서버 설정
-    document.getElementById('server-port-input').value = settings.server.port || 3000;
+    document.getElementById('server-port-input').value = settings.server.port || 6000;
     document.getElementById('timeout').value = settings.server.timeout || 30;
     document.getElementById('auto-start').checked = settings.server.autoStart !== false;
     
@@ -350,10 +350,10 @@ function initSettingsForm() {
     document.getElementById('login-attempts').value = settings.security.loginAttempts || 5;
     
     // 서버 포트 표시 업데이트
-    document.getElementById('server-port').textContent = settings.server.port || 3000;
+    document.getElementById('server-port').textContent = settings.server.port || 6000;
     
     // 연결 URL 업데이트
-    updateConnectionUrl(settings.server.port || 3000);
+    updateConnectionUrl(settings.server.port || 6000);
   });
 }
 
@@ -624,10 +624,10 @@ function requestServerInfo() {
   // 서버 정보 수신
   ipcRenderer.on('server-info', (event, info) => {
     document.getElementById('server-ip').textContent = info.ip || '127.0.0.1';
-    document.getElementById('server-port').textContent = info.port || '3000';
+    document.getElementById('server-port').textContent = info.port || '6000';
     
     // 연결 URL 업데이트
-    updateConnectionUrl(info.port || 3000, info.ip);
+    updateConnectionUrl(info.port || 6000, info.ip);
     
     // 서버 상태에 따라 버튼 상태 업데이트
     const startServerBtn = document.getElementById('start-server-btn');
@@ -735,10 +735,10 @@ function subscribeToServerStatus() {
     }
     
     // 서버 정보 업데이트
-    document.getElementById('server-port').textContent = status.port || '3000';
+    document.getElementById('server-port').textContent = status.port || '6000';
     
     // 연결 URL 업데이트
-    updateConnectionUrl(status.port || 3000, status.ip);
+    updateConnectionUrl(status.port || 6000, status.ip);
     
     // 연결된 클라이언트 수 업데이트
     document.getElementById('client-count').textContent = status.clientCount || 0;
