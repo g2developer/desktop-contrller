@@ -221,20 +221,11 @@ body {
 }
 
 .tab-content {
-  display: none !important;
-  visibility: hidden;
-  opacity: 0;
-  height: 0;
-  overflow: hidden;
-  transition: opacity 0.3s ease;
+  display: none;
 }
 
 .tab-content.active {
-  display: block !important;
-  visibility: visible;
-  opacity: 1;
-  height: auto;
-  overflow: visible;
+  display: block;
 }
 
 .card {
