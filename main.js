@@ -1,3 +1,5 @@
+// main.js 파일 시작
+console.log('메인 프로세스 시작...');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
@@ -64,12 +66,27 @@ app.whenReady().then(() => {
   
   // 자동 시작 설정이 활성화된 경우 서버 시작
   if (autoStart) {
-    serverManager.startServer();
+    // 짧은 지연 후 서버 시작 (다른 초기화가 완료된 후)
+    setTimeout(() => {
+      console.log('서버 자동 시작...');
+      const started = serverManager.startServer();
+      console.log('서버 시작 결과:', started ? '성공' : '실패');
+    }, 1000);
   }
 });
 
 // 모든 창이 닫히면 앱 종료
 app.on('window-all-closed', () => {
+  // 서버 중지 시도
+  try {
+    if (serverManager.isRunning()) {
+      console.log('서버 종료 중...');
+      serverManager.stopServer();
+    }
+  } catch (err) {
+    console.error('서버 종료 오류:', err);
+  }
+  
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -78,5 +95,18 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+// 앱 종료 직전 이벤트
+app.on('before-quit', () => {
+  // 서버 중지 확인
+  try {
+    if (serverManager.isRunning()) {
+      console.log('앱 종료 전 서버 중지 중...');
+      serverManager.stopServer();
+    }
+  } catch (err) {
+    console.error('앱 종료 전 서버 중지 오류:', err);
   }
 });

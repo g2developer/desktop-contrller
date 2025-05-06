@@ -370,7 +370,7 @@ function init(window, userMgr, serverMgr, captureMgr, claudeMgr, store) {
   ipcMain.on('get-settings', (event) => {
     // 서버 설정
     const serverSettings = {
-      port: store.get('serverPort') || 6000,
+      port: store.get('serverPort') || 8000,
       timeout: store.get('socketTimeout') || 30,
       autoStart: store.get('autoStart') !== false
     };
@@ -406,7 +406,7 @@ function init(window, userMgr, serverMgr, captureMgr, claudeMgr, store) {
     // 기본 설정
     const defaultSettings = {
       // 서버 설정
-      serverPort: 6000,
+      serverPort: 8000,
       socketTimeout: 30,
       autoStart: true,
       

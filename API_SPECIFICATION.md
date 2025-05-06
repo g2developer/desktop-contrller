@@ -7,7 +7,7 @@
 ## 기본 정보
 
 - **프로토콜**: WebSocket (Socket.io)
-- **기본 포트**: 6000
+- **기본 포트**: 8000
 - **인코딩**: UTF-8
 - **데이터 포맷**: JSON
 
@@ -18,7 +18,7 @@
 http://{서버IP주소}:{포트번호}
 ```
 
-예시: `http://192.168.0.10:6000`
+예시: `http://192.168.0.10:8000`
 
 ### 클라이언트 연결 정보
 클라이언트는 연결 시 다음 정보를 제공해야 합니다:
@@ -287,7 +287,7 @@ io.on('connection', (socket) => {
 
 ```javascript
 // 서버 연결
-const socket = io('http://192.168.0.10:6000', {
+const socket = io('http://192.168.0.10:8000', {
   reconnection: true,
   reconnectionDelay: 1000,
   timeout: 10000,

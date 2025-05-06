@@ -2,7 +2,7 @@
 // 설정 관리 모듈
 
 // 상수 정의
-const DEFAULT_SERVER_PORT = 6000; // 기본 포트 번호를 3000에서 6000으로 변경
+const DEFAULT_SERVER_PORT = 8000; // 기본 포트 번호를 6000에서 8000으로 변경
 
 const path = require('path');
 const { app } = require('electron');
