@@ -788,4 +788,4 @@ function generateQRCode(url) {
   if (qrcodeElement) {
     qrcodeElement.textContent = 'QR 코드 영역';
   }
-});
+}
