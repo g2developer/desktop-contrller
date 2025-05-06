@@ -788,7 +788,4 @@ function generateQRCode(url) {
   if (qrcodeElement) {
     qrcodeElement.textContent = 'QR 코드 영역';
   }
-}
-
-// 애플리케이션 초기화 완료 로그
-console.log('데스크탑 컨트롤러 UI 초기화 완료');
+});
