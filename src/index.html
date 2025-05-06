@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desktop Controller</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Desktop Controller</h1>
+    </header>
+    
+    <main>
+      <div class="status-panel">
+        <div class="status">
+          <span class="status-label">상태:</span>
+          <span id="connection-status">연결 대기 중</span>
+        </div>
+        <div class="ip-address">
+          <span class="ip-label">IP 주소:</span>
+          <span id="ip-address">로딩 중...</span>
+        </div>
+      </div>
+      
+      <div class="connection-panel">
+        <div class="qr-code-container">
+          <div id="qrcode"></div>
+          <p>원격 접속을 위해 QR 코드를 스캔하세요</p>
+        </div>
+        
+        <div class="manual-entry">
+          <p>또는 다음 주소를 입력하세요:</p>
+          <div id="connection-url">http://localhost:3000</div>
+          <button id="copy-url">복사</button>
+        </div>
+      </div>
+      
+      <div class="clients-panel">
+        <h2>연결된 기기</h2>
+        <ul id="connected-clients">
+          <!-- 연결된 클라이언트 목록이 여기에 표시됩니다 -->
+        </ul>
+      </div>
+    </main>
+    
+    <footer>
+      <p>Desktop Controller App &copy; 2025</p>
+    </footer>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

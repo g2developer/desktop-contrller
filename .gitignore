@@ -1,0 +1,35 @@
+# 빌드 결과물
+/build
+/dist
+/*.exe
+/*.dll
+
+# 의존성 패키지
+/node_modules
+/packages
+
+# 환경 설정 파일
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# 로그 파일
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# IDE 설정 파일
+/.idea
+/.vscode
+/*.suo
+/*.ntvs*
+/*.njsproj
+/*.sln
+/*.sw?
