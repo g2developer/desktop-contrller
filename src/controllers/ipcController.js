@@ -211,9 +211,14 @@ function init(window, userMgr, serverMgr, captureMgr, claudeMgr, store) {
   });
   
   // 사용자 수정 요청
-  ipcMain.on('update-user', (event, userData) => {
+  ipcMain.on('update-user', (event, data) => {
+    console.log('사용자 수정 요청 수신:', data);
     // UserManager에서 사용자 수정
-    const result = userMgr.updateUser(userData.id, userData);
+    // data의 형식을 올바르게 처리
+    const userId = data.id;
+    const userData = data.userData;
+    
+    const result = userMgr.updateUser(userId, userData);
     
     event.reply('user-updated', result);
     
@@ -221,7 +226,7 @@ function init(window, userMgr, serverMgr, captureMgr, claudeMgr, store) {
       // 활동 로그 추가
       addActivityLog({
         type: 'user',
-        message: `사용자 ${userData.id}의 정보가 수정되었습니다.`,
+        message: `사용자 ${userId}의 정보가 수정되었습니다.`,
         timestamp: new Date().toISOString()
       });
     }

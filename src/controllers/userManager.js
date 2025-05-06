@@ -97,6 +97,8 @@ function updateUser(userId, userData) {
       return { success: false, message: '유효하지 않은 사용자 데이터입니다.' };
     }
     
+    console.log('사용자 정보 업데이트:', userId, userData);
+    
     const users = getUserData();
     const userIndex = users.findIndex(u => u.id === userId);
     
@@ -108,11 +110,15 @@ function updateUser(userId, userData) {
     const oldUser = users[userIndex];
     const updatedUser = {
       ...oldUser,
-      password: userData.password || oldUser.password,
       name: userData.name || oldUser.name,
       status: userData.status || oldUser.status,
       updated: new Date().toISOString()
     };
+    
+    // 비밀번호가 제공된 경우에만 비밀번호 업데이트
+    if (userData.password) {
+      updatedUser.password = userData.password;
+    }
     
     users[userIndex] = updatedUser;
     const success = saveUserData(users);

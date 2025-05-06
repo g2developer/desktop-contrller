@@ -90,12 +90,13 @@ function initModals() {
     const userPasswordConfirm = document.getElementById('user-password-confirm').value;
     
     // 입력 검증
-    if (!userId || !userName || !userPassword) {
-      alert('모든 필드를 입력해주세요.');
+    if (!userId || !userName) {
+      alert('아이디와 이름을 입력해주세요.');
       return;
     }
     
-    if (userPassword !== userPasswordConfirm) {
+    // 비밀번호 입력 시에만 일치 여부 확인
+    if (userPassword && userPassword !== userPasswordConfirm) {
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
@@ -103,22 +104,28 @@ function initModals() {
     // 사용자 데이터 생성
     const userData = {
       id: userId,
-      name: userName,
-      password: userPassword
+      name: userName
     };
+    
+    // 비밀번호가 입력된 경우에만 추가
+    if (userPassword) {
+      userData.password = userPassword;
+    }
     
     // 모달 제목으로 추가 또는 수정 구분
     const isEdit = document.getElementById('modal-title').textContent.includes('수정');
     
     // IPC를 통해 메인 프로세스로 데이터 전송
     if (isEdit) {
-      ipcRenderer.send('update-user', userData);
+      // 수정 시에는 userID와 userData를 분리하여 전송
+      ipcRenderer.send('update-user', { id: userId, userData });
     } else {
       ipcRenderer.send('add-user', userData);
     }
     
     // 모달 닫기
     userModal.classList.remove('show');
+    console.log('사용자 저장 요청 전송:', isEdit ? '수정' : '추가', userData);
   });
   
   // 명령 결과 모달
