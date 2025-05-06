@@ -11,16 +11,33 @@ const USER_DATA_FILE = path.join(app.getPath('userData'), 'users.json');
  */
 function getUserData() {
   try {
+    console.log('사용자 데이터 요청 - 데이터 경로:', USER_DATA_FILE);
+    
     if (fs.existsSync(USER_DATA_FILE)) {
-      return JSON.parse(fs.readFileSync(USER_DATA_FILE, 'utf8'));
+      console.log('사용자 데이터 파일 발견');
+      const userData = JSON.parse(fs.readFileSync(USER_DATA_FILE, 'utf8'));
+      console.log(`사용자 데이터 로드 성공: 총 ${userData.length}명의 사용자`);
+      
+      // 디버깅을 위해 사용자 ID 목록 출력
+      if (userData && userData.length > 0) {
+        console.log(`사용자 목록: ${userData.map(u => u.id).join(', ')}`);
+      }
+      
+      return userData;
     } else {
-      const defaultUsers = [{ id: 'admin', password: 'admin' }];
+      console.log('사용자 데이터 파일이 없음, 기본 사용자 생성');
+      // test1 사용자 추가
+      const defaultUsers = [
+        { id: 'admin', password: 'admin' },
+        { id: 'test1', password: 'test1' }
+      ];
       fs.writeFileSync(USER_DATA_FILE, JSON.stringify(defaultUsers, null, 2));
       return defaultUsers;
     }
   } catch (err) {
     console.error('사용자 데이터 로드 오류:', err);
-    return [{ id: 'admin', password: 'admin' }];
+    // 오류 발생 시 기본 사용자 2개 리턴
+    return [{ id: 'admin', password: 'admin' }, { id: 'test1', password: 'test1' }];
   }
 }
 

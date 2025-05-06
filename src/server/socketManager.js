@@ -2,7 +2,16 @@
 
 // 모듈 가져오기
 const userManager = require('../controllers/userManager');
-const logger = require('../utils/logger');
+let logger = require('../utils/logger');
+
+// 로거가 없는 경우 간단한 로거 구현
+if (!logger) {
+  logger = {
+    log: (...args) => console.log('[SocketManager]', ...args),
+    warn: (...args) => console.warn('[SocketManager]', ...args),
+    error: (...args) => console.error('[SocketManager]', ...args)
+  };
+}
 
 // 변수 초기화
 let io;
@@ -49,10 +58,14 @@ function setupSocketEvents() {
       username: null,
       device: 'Unknown',
       ip: socket.handshake.address,
-      connectTime: new Date()
+      connectTime: new Date(),
+      lastActivity: new Date() // 마지막 활동 시간 추가
     };
     
     connectedClients[socket.id] = clientInfo;
+    
+    // 연결 확인 로그
+    logger.log(`소켓 연결 수락 - Socket ID: ${socket.id}, IP: ${socket.handshake.address}`);
     
     // 클라이언트 정보 업데이트
     if (mainWindow) {
@@ -68,69 +81,113 @@ function setupSocketEvents() {
     
     // 클라이언트 정보 요청 처리
     socket.on('client-info', (data) => {
-      // 클라이언트 정보 업데이트
-      if (data.device) {
-        connectedClients[socket.id].device = data.device;
-      }
-      
-      // 업데이트된 클라이언트 정보 전송
-      if (mainWindow) {
-        mainWindow.webContents.send('clients-update', Object.values(connectedClients));
+      try {
+        // 클라이언트 정보 업데이트
+        if (data.device) {
+          connectedClients[socket.id].device = data.device;
+        }
+        
+        // 업데이트된 클라이언트 정보 전송
+        if (mainWindow) {
+          mainWindow.webContents.send('clients-update', Object.values(connectedClients));
+        }
+      } catch (error) {
+        logger.error(`클라이언트 정보 처리 중 오류 발생 - Socket ID: ${socket.id}, 오류: ${error.message}`);
       }
     });
 
     // 로그인 요청 처리
-    socket.on('login', (data) => {
-      const users = userManager.getUserData();
-      const user = users.find(u => u.id === data.id && u.password === data.password);
-      
-      if (user) {
-        // 로그인 성공
-        connectedClients[socket.id].authenticated = true;
-        connectedClients[socket.id].username = data.id;
+    socket.on('login', (data, callback) => {
+      try {
+        logger.log(`로그인 요청 수신 - Socket ID: ${socket.id}, 사용자: ${data.id}`);
+
+        // 콜백 함수가 없는 경우를 위한 기본 함수 설정
+        const sendResponse = typeof callback === 'function' ? callback : (response) => {
+          logger.log(`로그인 응답 전송 (이벤트) - Socket ID: ${socket.id}, 성공: ${response.success}`);
+          socket.emit('login-result', response);
+        };
+
+        // 사용자 데이터 로드
+        const users = userManager.getUserData();
+        logger.log(`사용자 데이터 로드됨 - 총 ${users ? users.length : 0}명의 사용자`);
         
-        // 로그인 시간 갱신
-        const loginTime = new Date();
-        connectedClients[socket.id].lastLoginTime = loginTime;
-        
-        // 로그인 결과 클라이언트에 전송
-        socket.emit('login-result', { 
-          success: true,
-          username: data.id,
-          timestamp: loginTime.toISOString()
-        });
-        
-        // 사용자 데이터 업데이트 (마지막 로그인 시간)
-        user.lastLogin = loginTime.toISOString();
-        userManager.saveUserData(users);
-        
-        // 클라이언트 정보 업데이트
-        if (mainWindow) {
-          mainWindow.webContents.send('clients-update', Object.values(connectedClients));
-          
-          // 활동 로그 추가
-          mainWindow.webContents.send('activity-log', {
-            type: 'login',
-            message: `${data.id}님이 로그인했습니다. (${connectedClients[socket.id].device})`,
-            timestamp: loginTime.toISOString()
-          });
+        // 디버깅을 위해 사용자 ID 목록 출력
+        if (users && users.length > 0) {
+          logger.log(`사용 가능한 사용자 목록: ${users.map(u => u.id).join(', ')}`);
+        } else {
+          logger.warn('사용자 목록이 비어 있습니다.');
         }
-      } else {
-        // 로그인 실패
-        socket.emit('login-result', { 
-          success: false, 
-          message: '잘못된 아이디 또는 비밀번호입니다.',
+        
+        const user = users.find(u => u.id === data.id && u.password === data.password);
+        
+        if (user) {
+          // 로그인 성공
+          connectedClients[socket.id].authenticated = true;
+          connectedClients[socket.id].username = data.id;
+          
+          // 로그인 시간 갱신
+          const loginTime = new Date();
+          connectedClients[socket.id].lastLoginTime = loginTime;
+          
+          // 로그인 결과 클라이언트에 전송
+          logger.log(`로그인 성공 - 사용자: ${data.id}`);
+          const response = { 
+            success: true,
+            username: data.id,
+            timestamp: loginTime.toISOString()
+          };
+          
+          sendResponse(response);
+          
+          // 사용자 데이터 업데이트 (마지막 로그인 시간)
+          user.lastLogin = loginTime.toISOString();
+          userManager.saveUserData(users);
+          
+          // 클라이언트 정보 업데이트
+          if (mainWindow) {
+            mainWindow.webContents.send('clients-update', Object.values(connectedClients));
+            
+            // 활동 로그 추가
+            mainWindow.webContents.send('activity-log', {
+              type: 'login',
+              message: `${data.id}님이 로그인했습니다. (${connectedClients[socket.id].device})`,
+              timestamp: loginTime.toISOString()
+            });
+          }
+        } else {
+          // 로그인 실패
+          logger.warn(`로그인 실패 - 사용자: ${data.id}`);
+          const response = { 
+            success: false, 
+            message: '잘못된 아이디 또는 비밀번호입니다.',
+            timestamp: new Date().toISOString()
+          };
+          
+          sendResponse(response);
+          
+          if (mainWindow) {
+            // 활동 로그 추가 (로그인 실패)
+            mainWindow.webContents.send('activity-log', {
+              type: 'login-fail',
+              message: `로그인 실패: ${data.id}`,
+              timestamp: new Date().toISOString()
+            });
+          }
+        }
+      } catch (error) {
+        logger.error(`로그인 처리 중 오류 발생 - Socket ID: ${socket.id}, 오류: ${error.message}`);
+        
+        // 콜백 함수가 없는 경우를 위한 기본 함수 설정
+        const sendResponse = typeof callback === 'function' ? callback : (response) => {
+          socket.emit('login-result', response);
+        };
+        
+        // 오류 발생 시에도 응답 전송
+        sendResponse({
+          success: false,
+          message: '서버 내부 오류가 발생했습니다.',
           timestamp: new Date().toISOString()
         });
-        
-        if (mainWindow) {
-          // 활동 로그 추가 (로그인 실패)
-          mainWindow.webContents.send('activity-log', {
-            type: 'login-fail',
-            message: `로그인 실패: ${data.id}`,
-            timestamp: new Date().toISOString()
-          });
-        }
       }
     });
 
@@ -181,40 +238,48 @@ function setupSocketEvents() {
     
     // 연결 확인 요청 처리
     socket.on('ping', (callback) => {
-      if (typeof callback === 'function') {
-        callback({
-          status: 'ok',
-          timestamp: new Date().toISOString()
-        });
-      } else {
-        socket.emit('pong', {
-          status: 'ok',
-          timestamp: new Date().toISOString()
-        });
+      try {
+        if (typeof callback === 'function') {
+          callback({
+            status: 'ok',
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          socket.emit('pong', {
+            status: 'ok',
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (error) {
+        logger.error(`핑 처리 중 오류 발생 - Socket ID: ${socket.id}, 오류: ${error.message}`);
       }
     });
 
     // 연결 해제 처리
     socket.on('disconnect', () => {
-      logger.log('클라이언트 연결 해제:', socket.id);
-      
-      const clientInfo = connectedClients[socket.id];
-      const username = clientInfo ? clientInfo.username || '알 수 없음' : '알 수 없음';
-      const device = clientInfo ? clientInfo.device || '알 수 없음' : '알 수 없음';
-      
-      // 클라이언트 정보 삭제
-      delete connectedClients[socket.id];
-      
-      if (mainWindow) {
-        // 클라이언트 정보 업데이트
-        mainWindow.webContents.send('clients-update', Object.values(connectedClients));
+      try {
+        logger.log('클라이언트 연결 해제:', socket.id);
         
-        // 활동 로그 추가
-        mainWindow.webContents.send('activity-log', {
-          type: 'disconnect',
-          message: `${username}(${device})의 연결이 종료되었습니다.`,
-          timestamp: new Date().toISOString()
-        });
+        const clientInfo = connectedClients[socket.id];
+        const username = clientInfo ? clientInfo.username || '알 수 없음' : '알 수 없음';
+        const device = clientInfo ? clientInfo.device || '알 수 없음' : '알 수 없음';
+        
+        // 클라이언트 정보 삭제
+        delete connectedClients[socket.id];
+        
+        if (mainWindow) {
+          // 클라이언트 정보 업데이트
+          mainWindow.webContents.send('clients-update', Object.values(connectedClients));
+          
+          // 활동 로그 추가
+          mainWindow.webContents.send('activity-log', {
+            type: 'disconnect',
+            message: `${username}(${device})의 연결이 종료되었습니다.`,
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (error) {
+        logger.error(`연결 해제 처리 중 오류 발생: ${error.message}`);
       }
     });
   });
