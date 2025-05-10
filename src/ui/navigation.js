@@ -24,26 +24,21 @@ function initNavElements() {
 function initNavigation() {
   initNavElements();
   
-  // 여러 탭이 동시에 활성화되는 문제 방지를 위한 CSS 스타일 추가
+  // 탭 스타일 관련 CSS 추가
   addNavigationStyle();
   
-  // 기존 탭 이벤트 리스너를 포함한 각 탭을 복제하여 교체
+  // 기존 방식(복제)에서 직접 이벤트 리스너 추가로 변경
   navItems.forEach(item => {
-    const newItem = item.cloneNode(true);
-    item.parentNode.replaceChild(newItem, item);
+    // 기존 이벤트 리스너 제거 (클릭 이벤트가 중복되지 않도록)
+    item.removeEventListener('click', navigateTabHandler);
     
-    // 새로운 탭에 이벤트 리스너 추가
-    newItem.addEventListener('click', () => {
-      const page = newItem.getAttribute('data-page');
-      console.log(`탭 클릭됨: ${page}`);
-      navigateToPage(page);
-    });
+    // 새 이벤트 리스너 추가
+    item.addEventListener('click', navigateTabHandler);
+    
+    console.log(`탭 이벤트 리스너 추가: ${item.getAttribute('data-page')}`);
   });
   
-  // 탭 참조 다시 가져오기
-  navItems = document.querySelectorAll('.nav-item');
-  
-  // 처음 로드될 때 기본 탭으로 설정
+  // 초기 페이지 로드
   setTimeout(() => {
     // 이미 활성화된 페이지가 있는지 확인
     const activePage = document.querySelector('.page:not(.hidden)');
@@ -54,6 +49,19 @@ function initNavigation() {
   }, 500);
   
   console.log('내비게이션 초기화 완료');
+}
+
+/**
+ * 탭 클릭 이벤트 핸들러
+ * @param {Event} event 클릭 이벤트
+ */
+function navigateTabHandler(event) {
+  const page = this.getAttribute('data-page');
+  console.log(`탭 클릭됨: ${page}`);
+  
+  if (page) {
+    navigateToPage(page);
+  }
 }
 
 /**
@@ -74,6 +82,7 @@ function addNavigationStyle() {
     .nav-item {
       color: var(--gray-300) !important;
       background-color: transparent !important;
+      cursor: pointer !important;
     }
     
     .nav-item:hover {
@@ -106,6 +115,8 @@ function addNavigationStyle() {
  * @param {string} page 페이지 ID
  */
 function navigateToPage(page) {
+  console.log(`페이지 전환 시작: ${page}`);
+  
   // 모든 탭에서 active 클래스 제거
   document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.remove('active');
@@ -115,11 +126,16 @@ function navigateToPage(page) {
   const selectedTab = document.querySelector(`.nav-item[data-page="${page}"]`);
   if (selectedTab) {
     selectedTab.classList.add('active');
+  } else {
+    console.error(`해당 페이지의 탭을 찾을 수 없음: ${page}`);
   }
   
   // 디버깅 확인
   const activeTabs = document.querySelectorAll('.nav-item.active');
   console.log(`활성화된 탭 수: ${activeTabs.length}개`);
+  activeTabs.forEach(tab => {
+    console.log(`- 활성화된 탭: ${tab.getAttribute('data-page')}`);
+  });
   
   // 모든 페이지 숨기기
   document.querySelectorAll('.page').forEach(p => {
@@ -158,36 +174,29 @@ function navigateToPage(page) {
     try {
       if (page === 'dashboard') {
         // 대시보드 페이지 진입 시
-        if (window.electronAPI && window.electronAPI.initDashboard) {
-          window.electronAPI.initDashboard();
-        }
-        // 서버 상태 및 클라이언트 목록 업데이트
-        getServerStatus();
-        if (window.electronAPI && window.electronAPI.getClients) {
-          window.electronAPI.getClients();
+        if (window.electronAPI && window.electronAPI.getServerStatus) {
+          window.electronAPI.getServerStatus();
         }
       } else if (page === 'users') {
         // 사용자 관리 페이지 진입 시
-        if (window.electronAPI && window.electronAPI.loadUsers) {
-          window.electronAPI.loadUsers();
+        if (window.electronAPI && window.electronAPI.send) {
+          window.electronAPI.send('get-users');
         }
       } else if (page === 'capture') {
         // 캡처 설정 페이지 진입 시
-        if (window.electronAPI && window.electronAPI.loadCaptureArea) {
-          window.electronAPI.loadCaptureArea();
-        }
-        if (window.electronAPI && window.electronAPI.loadRecentCaptures) {
-          window.electronAPI.loadRecentCaptures();
+        if (window.electronAPI && window.electronAPI.send) {
+          window.electronAPI.send('load-capture-area');
+          window.electronAPI.send('load-recent-captures');
         }
       } else if (page === 'logs') {
         // 활동 로그 페이지 진입 시
-        if (window.electronAPI && window.electronAPI.renderFullActivityLog) {
-          window.electronAPI.renderFullActivityLog();
+        if (window.electronAPI && window.electronAPI.send) {
+          window.electronAPI.send('get-full-activity-log');
         }
       } else if (page === 'settings') {
         // 설정 페이지 진입 시
-        if (window.electronAPI && window.electronAPI.loadSettings) {
-          window.electronAPI.loadSettings();
+        if (window.electronAPI && window.electronAPI.send) {
+          window.electronAPI.send('load-settings');
         }
       }
     } catch (error) {
