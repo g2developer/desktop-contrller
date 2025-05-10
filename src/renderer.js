@@ -107,6 +107,14 @@ console.log('렌더러 프로세스 시작');
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM 로드 완료');
   
+  // 네비게이션 초기화 요소 찾기
+  const navItems = document.querySelectorAll('.nav-item');
+  console.log('네비게이션 아이템 발견:', navItems.length);
+  
+  // 페이지 요소 찾기
+  const pages = document.querySelectorAll('.page');
+  console.log('페이지 발견:', pages.length);
+  
   try {
     // electronAPI 확인
     if (!window.electronAPI) {
@@ -117,19 +125,32 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 앱 초기화 함수 호출
     if (window.electronAPI.initApp) {
-      const result = window.electronAPI.initApp();
-      console.log('앱 초기화 결과:', result);
+      // 비동기 처리를 위한 Promise 래핑
+      Promise.resolve(window.electronAPI.initApp())
+        .then(result => {
+          console.log('앱 초기화 결과:', result);
+          
+          // 네비게이션 초기화
+          if (window.electronAPI.initNavigation) {
+            window.electronAPI.initNavigation();
+          }
+          
+          // 서버 상태 요청
+          if (window.electronAPI.getServerStatus) {
+            console.log('서버 상태 요청');
+            window.electronAPI.getServerStatus();
+          }
+          
+          console.log('앱 초기화 성공');
+        })
+        .catch(error => {
+          console.error('앱 초기화 프로미스 오류:', error);
+          showErrorMessage(`앱 초기화 실패: ${error.message}`);
+          setupBackupUI();
+        });
     } else {
       throw new Error('앱 초기화 함수가 없습니다.');
     }
-    
-    // 서버 상태 요청
-    if (window.electronAPI.getServerStatus) {
-      console.log('서버 상태 요청');
-      window.electronAPI.getServerStatus();
-    }
-    
-    console.log('앱 초기화 성공');
   } catch (error) {
     console.error('앱 초기화 오류:', error.message);
     showErrorMessage(`앱 초기화 실패: ${error.message}`);
@@ -168,5 +189,55 @@ function setupBackupUI() {
       // 개발자 도구 열기를 시도하는 메시지 표시
       showErrorMessage('백업 모드에서는 개발자 도구를 열 수 없습니다. 앱을 재시작하세요.');
     });
+  }
+  
+  // 네비게이션 백업 초기화
+  try {
+    // 기본 네비게이션 백업 로직 구현
+    initBackupNavigation();
+  } catch (navError) {
+    console.error('백업 네비게이션 초기화 오류:', navError);
+  }
+}
+
+// 백업 네비게이션 초기화 함수
+function initBackupNavigation() {
+  const navItems = document.querySelectorAll('.nav-item');
+  const pages = document.querySelectorAll('.page');
+  
+  // 초기 페이지 표시
+  if (pages.length > 0) {
+    pages.forEach(page => page.classList.add('hidden'));
+    if (pages[0]) {
+      pages[0].classList.remove('hidden');
+    }
+  }
+  
+  // 네비게이션 아이템 이벤트 리스너 추가
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const pageId = item.getAttribute('data-page');
+      if (!pageId) return;
+      
+      // 모든 탭 비활성화
+      navItems.forEach(tab => tab.classList.remove('active'));
+      
+      // 선택된 탭 활성화
+      item.classList.add('active');
+      
+      // 모든 페이지 숨기기
+      pages.forEach(page => page.classList.add('hidden'));
+      
+      // 선택된 페이지 표시
+      const targetPage = document.getElementById(`${pageId}-page`);
+      if (targetPage) {
+        targetPage.classList.remove('hidden');
+      }
+    });
+  });
+  
+  // 첫 번째 탭 활성화
+  if (navItems.length > 0 && navItems[0]) {
+    navItems[0].classList.add('active');
   }
 }

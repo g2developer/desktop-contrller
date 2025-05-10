@@ -36,6 +36,64 @@ let serverAddress = '';
 let connectedClients = [];
 
 /**
+ * 서버 관련 기능 초기화
+ */
+function initServerFeatures() {
+  // 그래도 문제가 있을 수 있으므로 인라인 스크립트를 페이지에 직접 삽입
+  injectServerFixScript();
+  
+  // DOM 요소 초기화
+  initServerElements();
+}
+
+/**
+ * 서버 중지 관련 인라인 스크립트 삽입
+ */
+function injectServerFixScript() {
+  try {
+    console.log('서버 중지 관련 스크립트 삽입 시도');
+    const script = document.createElement('script');
+    script.id = 'server-fix-inline';
+    script.textContent = `
+      // 서버 중지 버튼 인라인 스크립트
+      (function() {
+        console.log('서버 중지 버튼 인라인 스크립트 로드 완료');
+        
+        // DOM 로드 완료 이후 실행
+        document.addEventListener('DOMContentLoaded', function() {
+          // 1초 뒤 실행 (다른 스크립트가 먼저 실행될 수 있도록)
+          setTimeout(function() {
+            const stopBtn = document.getElementById('stop-server-btn');
+            if (stopBtn) {
+              stopBtn.addEventListener('click', function() {
+                console.log('서버 중지 버튼 인라인 클릭 핸들러');
+                if (window.electronAPI) {
+                  window.electronAPI.send('stop-server', {source: 'inline'});
+                }
+              });
+              console.log('인라인 이벤트 리스너 추가 성공');
+            } else {
+              console.error('서버 중지 버튼을 찾을 수 없어 인라인 스크립트 실패');
+            }
+          }, 1000);
+        });
+      })();
+    `;
+    
+    // 기존 스크립트가 있으면 제거
+    const existingScript = document.getElementById('server-fix-inline');
+    if (existingScript) {
+      existingScript.parentNode.removeChild(existingScript);
+    }
+    
+    // 문서에 스크립트 추가
+    document.head.appendChild(script);
+    console.log('서버 중지 관련 스크립트 삽입 완료');
+  } catch (error) {
+    console.error('스크립트 삽입 실패:', error);
+  }
+}
+/**
  * 서버 관련 DOM 요소 초기화
  */
 function initServerElements() {
@@ -56,14 +114,69 @@ function initServerElements() {
   clientList = document.getElementById('client-list');
   refreshClientsBtn = document.getElementById('refresh-clients');
   
+  console.log('서버 관련 DOM 요소 초기화 완료');
+  
   // 이벤트 리스너 설정
   serverToggle.addEventListener('click', toggleServer);
   startServerBtn.addEventListener('click', startServer);
-  stopServerBtn.addEventListener('click', stopServer);
+  
+  // 서버 중지 버튼에 대한 특별 처리 - 기존 이벤트 리스너 제거 및 새로운 이벤트 리스너 추가
+  patchStopServerButton();
+  
   copyIpBtn.addEventListener('click', copyServerAddress);
   refreshClientsBtn.addEventListener('click', () => {
     ipcRenderer.send('get-clients');
   });
+  
+  // 서버 중지 관련 추가 사용자 정의 이벤트 리스너 추가
+  document.addEventListener('server-stop-request', function() {
+    console.log('server-stop-request 사용자 정의 이벤트 찐츠됨');
+    stopServer({source: 'custom_event'});
+  });
+}
+
+/**
+ * 서버 중지 버튼 패치 - direct-fix.js에서 통합
+ */
+function patchStopServerButton() {
+  // 1. 원래 버튼 참조 가져오기
+  const originalStopBtn = document.getElementById('stop-server-btn');
+  if (!originalStopBtn) {
+    console.error('서버 중지 버튼을 찾을 수 없습니다');
+    
+    // 1초 후 다시 시도
+    setTimeout(patchStopServerButton, 1000);
+    return;
+  }
+  
+  console.log('서버 중지 버튼을 찾았습니다. 이벤트 리스너 추가 중...');
+  
+  // 2. 기존 이벤트 리스너 제거 (모든 이벤트)
+  const newButton = originalStopBtn.cloneNode(true);
+  originalStopBtn.parentNode.replaceChild(newButton, originalStopBtn);
+  
+  // 3. 새 버튼에 강화된 이벤트 리스너 추가
+  newButton.addEventListener('click', function(event) {
+    console.log('서버 중지 버튼 클릭됨 (강화된 이벤트 핸들러)');
+    
+    // 서버 중지 함수 호출
+    stopServer({source: 'patched_button'});
+    
+    // 이벤트 버블링 방지
+    event.preventDefault();
+    event.stopPropagation();
+  });
+  
+  // 패치 적용 확인을 위한 스타일 변경
+  newButton.style.color = '#ff5722';
+  setTimeout(() => {
+    newButton.style.color = '';
+  }, 2000);
+  
+  // 이제 stopServerBtn 변수가 갱신된 버튼을 참조하도록 업데이트
+  stopServerBtn = newButton;
+  
+  console.log('서버 중지 버튼 패치 완료');
 }
 
 /**
@@ -103,40 +216,89 @@ function startServer() {
 
 /**
  * 서버 중지
+ * @param {Object} options 선택적 설정 (소스 등)
  */
-function stopServer() {
-  console.log('서버 중지 요청 전송');
+function stopServer(options = {}) {
+  console.log(`서버 중지 요청 발생 (소스: ${options.source || 'button'})`);
+  
   try {
-    // 직접 메인 프로세스 이벤트 로깅 추가
-    console.log('stop-server 이벤트 전송 시도');
+    let methodUsed = false;
     
-    // window.electronAPI를 통한 전송 시도
-    if (window.electronAPI && typeof window.electronAPI.send === 'function') {
-      console.log('electronAPI를 통해 stop-server 이벤트 전송');
-      window.electronAPI.send('stop-server');
-      showToast('서버를 중지합니다... (electronAPI 사용)', 'info');
-      return;
+    // 1. directStopServer 메서드 시도 (직접 연결 메서드)
+    if (window.electronAPI && typeof window.electronAPI.directStopServer === 'function') {
+      console.log('1. electronAPI.directStopServer() 호출 시도');
+      window.electronAPI.directStopServer();
+      showToast('서버를 중지합니다... (directStopServer 메서드)', 'info');
+      methodUsed = true;
     }
     
-    // ipcRenderer를 통한 전송 시도
-    if (ipcRenderer && typeof ipcRenderer.send === 'function') {
-      console.log('ipcRenderer를 통해 stop-server 이벤트 전송');
-      ipcRenderer.send('stop-server');
+    // 2. send 메서드 시도 (electronAPI)
+    if (!methodUsed && window.electronAPI && typeof window.electronAPI.send === 'function') {
+      console.log('2. electronAPI.send("stop-server") 호출 시도');
+      window.electronAPI.send('stop-server', { 
+        source: options.source || 'server_js', 
+        timestamp: Date.now() 
+      });
+      showToast('서버를 중지합니다... (electronAPI.send 메서드)', 'info');
+      methodUsed = true;
+    }
+    
+    // 3. stopServer 메서드 시도 (전용 중지 메서드)
+    if (!methodUsed && window.electronAPI && typeof window.electronAPI.stopServer === 'function') {
+      console.log('3. electronAPI.stopServer() 호출 시도');
+      window.electronAPI.stopServer();
+      showToast('서버를 중지합니다... (stopServer 메서드)', 'info');
+      methodUsed = true;
+    }
+    
+    // 4. ipcRenderer 시도 (일반적인 Electron 방식)
+    if (!methodUsed && ipcRenderer && typeof ipcRenderer.send === 'function') {
+      console.log('4. ipcRenderer.send("stop-server") 호출 시도');
+      ipcRenderer.send('stop-server', { 
+        source: options.source || 'server_js_ipc', 
+        timestamp: Date.now() 
+      });
       showToast('서버를 중지합니다... (ipcRenderer 사용)', 'info');
-      return;
+      methodUsed = true;
     }
     
-    // 두 방법 모두 실패한 경우
-    console.error('이벤트 전송 방법을 찾을 수 없습니다.');
-    showToast('서버 중지를 위한 통신 방법이 없습니다.', 'error');
+    // 5. 사용자 정의 DOM 이벤트 사용
+    if (!methodUsed) {
+      console.log('5. CustomEvent 사용 시도');
+      const event = new CustomEvent('server-stop-request', {
+        detail: { source: options.source || 'dom_event', timestamp: Date.now() }
+      });
+      document.dispatchEvent(event);
+      showToast('서버를 중지합니다... (DOM 이벤트 사용)', 'info');
+      methodUsed = true;
+    }
     
-    // 직접적인 DOM 이벤트를 사용해 볼 수 있는 대안 추가
-    const event = new CustomEvent('server-stop-request');
-    document.dispatchEvent(event);
-    console.log('DOM 이벤트를 통한 서버 중지 요청 시도');
+    // 모든 방법이 실패한 경우
+    if (!methodUsed) {
+      throw new Error('어떤 서버 중지 방법도 실행할 수 없습니다');
+    }
+    
+    // 6. 상태 UI 처리 - 응답이 도착하기 전에 임시로 표시
+    setTimeout(() => {
+      // 응답이 오지 않았다면 일시적으로 버튼 상태 업데이트
+      if (serverRunning) {
+        startServerBtn.disabled = false;
+        stopServerBtn.disabled = true;
+      }
+    }, 1000);
+    
   } catch (error) {
     console.error('서버 중지 중 오류:', error);
-    showToast('서버 중지 중 오류가 발생했습니다: ' + error.message, 'error');
+    showToast(`서버 중지 중 오류가 발생했습니다: ${error.message}`, 'error');
+    
+    // 메시지 박스로 사용자에게 알림
+    if (options.showAlert !== false) {
+      try {
+        alert(`서버 중지 요청 중 오류가 발생했습니다: ${error.message}\n\n새로고침하거나 개발자 도구를 실행하여 문제를 해결하세요.`);
+      } catch (alertError) {
+        console.error('Alert 표시 오류:', alertError);
+      }
+    }
   }
 }
 
@@ -299,7 +461,9 @@ function disconnectClient(clientId) {
 }
 
 module.exports = {
+  initServerFeatures,
   initServerElements,
+  patchStopServerButton,
   toggleServer,
   startServer,
   stopServer,

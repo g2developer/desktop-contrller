@@ -6,7 +6,7 @@
 // contextIsolation이 적용되었으므로 window.electronAPI 사용
 const { showToast } = require('../ui/toast');
 const { initModalElements } = require('../ui/modal');
-const { initNavigation, getServerStatus } = require('../ui/navigation');
+const { initNavigation, navigateToPage, getServerStatus } = require('../ui/navigation');
 const serverModule = require('../features/server');
 const captureModule = require('../features/capture');
 const usersModule = require('../features/users');
@@ -36,7 +36,7 @@ function initApp() {
   initNavigation();
   
   // 서버 요소 초기화
-  serverModule.initServerElements();
+  serverModule.initServerFeatures();
   
   // 사용자 요소 초기화
   usersModule.initUserElements();
@@ -93,6 +93,18 @@ function initApp() {
       }
     }
   });
+  
+  // 초기 페이지 설정 - 현재 활성화된 페이지가 없는 경우 기본 페이지(대시보드)로 이동
+  setTimeout(() => {
+    try {
+      const activePage = document.querySelector('.page:not(.hidden)');
+      if (!activePage) {
+        navigateToPage('dashboard');
+      }
+    } catch (error) {
+      console.error('초기 페이지 표시 오류:', error);
+    }
+  }, 800);
   
   console.log('앱 초기화 완료');
 }
