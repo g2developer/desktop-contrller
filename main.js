@@ -408,15 +408,26 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   // 서버 중지 시도
   try {
-    if (serverManager.isRunning()) {
-      logManager.info(KoreanMessages.SERVER_STOP);
+    if (serverManager && serverManager.isRunning()) {
+      if (logManager) {
+        logManager.info(KoreanMessages.SERVER_STOP);
+      }
       serverManager.stopServer();
     }
     
     // 스트리밍 타이머 중지
     stopStreamingTimer();
+    
+    // 소켓 매니저 종료
+    console.log('창 닫힘 - 소켓 매니저 종료 호출');
+    if (socketManager && socketManager.shutdown) {
+      socketManager.shutdown();
+    }
   } catch (err) {
-    logManager.error(`${KoreanMessages.ERROR}: ` + err.message);
+    console.error(`창 닫힘 오류: ${err.message}`);
+    if (logManager) {
+      logManager.error(`${KoreanMessages.ERROR}: ` + err.message);
+    }
   }
   
   if (process.platform !== 'darwin') {
@@ -441,7 +452,16 @@ app.on('before-quit', () => {
     
     // 스트리밍 타이머 중지
     stopStreamingTimer();
+    
+    // 소켓 매니저 종료
+    console.log('소켓 매니저 종료 호출');
+    if (socketManager && socketManager.shutdown) {
+      socketManager.shutdown();
+    }
   } catch (err) {
-    logManager.error(`${KoreanMessages.ERROR}: ` + err.message);
+    console.error(`앱 종료 오류: ${err.message}`);
+    if (logManager) {
+      logManager.error(`${KoreanMessages.ERROR}: ` + err.message);
+    }
   }
 });
