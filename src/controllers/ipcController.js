@@ -6,6 +6,9 @@ const path = require('path');
 const os = require('os');
 const logger = require('../utils/logger');
 
+// 추가 모듈
+let commandProcessor;
+
 // 로컬 IP 주소 가져오기 함수
 function getLocalIpAddress() {
   const interfaces = os.networkInterfaces();
@@ -52,6 +55,9 @@ let activityLog = [];
 function init(window, userMgr, serverMgr, captureMgr, claudeMgr, store) {
   // 메인 윈도우 설정 (전역 변수에 할당)
   mainWindow = window;
+  
+  // 명령어 처리기 모듈 가져오기
+  commandProcessor = require('../services/commandProcessor');
   
   // 서버 시작 요청
   ipcMain.on('start-server', (event) => {
@@ -332,73 +338,122 @@ function init(window, userMgr, serverMgr, captureMgr, claudeMgr, store) {
     event.reply('capture-settings-data', settings);
   });
   
-  // 설정 저장 요청
-  ipcMain.on('save-settings', (event, settings) => {
-    // 서버 설정 저장
-    if (settings.server) {
-      store.set('serverPort', settings.server.port);
-      store.set('socketTimeout', settings.server.timeout);
-      store.set('autoStart', settings.server.autoStart);
+  // 전체 설정 저장 요청
+  ipcMain.on('save-all-settings', (event, settings) => {
+    try {
+      console.log('전체 설정 저장 시도:', settings);
+      
+      // 각 설정을 개별적으로 저장
+      if (settings.serverPort) store.set('serverPort', settings.serverPort);
+      if (settings.hasOwnProperty('autoStart')) store.set('autoStart', settings.autoStart);
+      if (settings.hasOwnProperty('minimizeToTray')) store.set('minimizeToTray', settings.minimizeToTray);
+      if (settings.hasOwnProperty('maxCommandLength')) store.set('maxCommandLength', settings.maxCommandLength);
+      if (settings.hasOwnProperty('maxHistory')) store.set('maxHistory', settings.maxHistory);
+      if (settings.hasOwnProperty('claudePath')) store.set('claudePath', settings.claudePath);
+      if (settings.hasOwnProperty('useClipboardForInput')) store.set('useClipboardForInput', settings.useClipboardForInput);
+      if (settings.hasOwnProperty('logLevel')) store.set('logLevel', settings.logLevel);
+      if (settings.hasOwnProperty('logRetention')) store.set('logRetention', settings.logRetention);
+      
+      console.log('전체 설정 저장 성공. 저장된 serverPort:', store.get('serverPort'));
+      
+      // 성공 응답
+      event.reply('save-all-settings-result', { success: true });
+      
+      // 활동 로그 추가
+      addActivityLog({
+        type: 'settings',
+        message: '전체 설정이 저장되었습니다.',
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('전체 설정 저장 오류:', err);
+      
+      // 오류 응답
+      event.reply('save-all-settings-result', { 
+        success: false,
+        message: '설정 저장 중 오류가 발생했습니다.' 
+      });
     }
-    
-    // 클로드 앱 설정 저장
-    if (settings.claude) {
-      store.set('claudePath', settings.claude.path);
-      store.set('autoLaunch', settings.claude.autoLaunch);
-      store.set('autoCaptureAfter', settings.claude.autoCaptureAfter);
-      store.set('captureDelay', settings.claude.captureDelay);
-    }
-    
-    // 보안 설정 저장
-    if (settings.security) {
-      store.set('sessionTimeout', settings.security.sessionTimeout);
-      store.set('passwordPolicy', settings.security.passwordPolicy);
-      store.set('loginAttempts', settings.security.loginAttempts);
-    }
-    
-    event.reply('save-settings-result', { success: true });
-    
-    // 활동 로그 추가
-    addActivityLog({
-      type: 'settings',
-      message: '설정이 저장되었습니다.',
-      timestamp: new Date().toISOString()
-    });
   });
   
-  // 설정 데이터 요청
-  ipcMain.on('get-settings', (event) => {
-    // 서버 설정
-    const serverSettings = {
-      port: store.get('serverPort') || 8000,
-      timeout: store.get('socketTimeout') || 30,
-      autoStart: store.get('autoStart') !== false
-    };
-    
-    // 클로드 앱 설정
-    const claudeSettings = {
-      path: store.get('claudePath') || '',
-      autoLaunch: store.get('autoLaunch') !== false,
-      autoCaptureAfter: store.get('autoCaptureAfter') !== false,
-      captureDelay: store.get('captureDelay') || 2
-    };
-    
-    // 보안 설정
-    const securitySettings = {
-      sessionTimeout: store.get('sessionTimeout') || 30,
-      passwordPolicy: store.get('passwordPolicy') || {
-        minLength: true,
-        requireNumbers: true,
-        requireSpecial: false
-      },
-      loginAttempts: store.get('loginAttempts') || 5
-    };
-    
-    event.reply('settings-data', {
-      server: serverSettings,
-      claude: claudeSettings,
-      security: securitySettings
+  // 템플릿 목록 요청
+  ipcMain.on('get-templates', (event) => {
+    // 명령어 처리기에서 템플릿 목록 가져오기
+    const templates = commandProcessor.getTemplates();
+    event.reply('templates-list', templates);
+  });
+  
+  // 템플릿 추가 요청
+  ipcMain.on('add-template', (event, { name, content }) => {
+    // 템플릿 추가
+    const success = commandProcessor.addTemplate(name, content);
+    event.reply('template-added', { 
+      success, 
+      message: success ? '템플릿가 추가되었습니다.' : '템플릿 추가에 실패했습니다.' 
     });
+    
+    if (success) {
+      // 활동 로그 추가
+      addActivityLog({
+        type: 'template',
+        message: `${name} 템플릿이 추가되었습니다.`,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+  
+  // 템플릿 삭제 요청
+  ipcMain.on('delete-template', (event, name) => {
+    // 템플릿 삭제
+    const success = commandProcessor.deleteTemplate(name);
+    event.reply('template-deleted', { 
+      success, 
+      message: success ? '템플릿가 삭제되었습니다.' : '템플릿 삭제에 실패했습니다.' 
+    });
+    
+    if (success) {
+      // 활동 로그 추가
+      addActivityLog({
+        type: 'template',
+        message: `${name} 템플릿이 삭제되었습니다.`,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+  
+  // 설정 가져오기 요청
+  ipcMain.on('get-settings', (event) => {
+    try {
+      // 전체 설정을 개별적으로 가져와서 응답
+      const settings = {
+        serverPort: store.get('serverPort') || 8000,
+        autoStart: store.get('autoStart') !== false,
+        minimizeToTray: store.get('minimizeToTray') === true,
+        maxCommandLength: store.get('maxCommandLength') || 10000,
+        maxHistory: store.get('maxHistory') || 100,
+        claudePath: store.get('claudePath') || '',
+        useClipboardForInput: store.get('useClipboardForInput') !== false,
+        logLevel: store.get('logLevel') || 'info',
+        logRetention: store.get('logRetention') || 7
+      };
+      
+      console.log('가져온 전체 설정:', settings);
+      event.reply('settings-data', settings);
+    } catch (err) {
+      console.error('설정 가져오기 오류:', err);
+      // 기본 설정 응답
+      event.reply('settings-data', {
+        serverPort: 8000,
+        autoStart: true,
+        minimizeToTray: false,
+        maxCommandLength: 10000,
+        maxHistory: 100,
+        claudePath: '',
+        useClipboardForInput: true,
+        logLevel: 'info',
+        logRetention: 7
+      });
+    }
   });
   
   // 설정 초기화 요청
@@ -449,19 +504,77 @@ function init(window, userMgr, serverMgr, captureMgr, claudeMgr, store) {
   });
   
   // 파일 대화상자 열기 요청
-  ipcMain.on('open-file-dialog', (event) => {
-    dialog.showOpenDialog(mainWindow, {
+  ipcMain.on('open-file-dialog', (event, options = {}) => {
+    const dialogOptions = {
       properties: ['openFile'],
-      filters: [
+      filters: []
+    };
+    
+    // 대화상자 유형에 따른 필터 설정
+    if (options.type === 'executable') {
+      // 실행 파일
+      dialogOptions.filters = [
         { name: '실행 파일', extensions: ['exe'] },
         { name: '모든 파일', extensions: ['*'] }
-      ]
-    }).then(result => {
+      ];
+    } else if (options.type === 'text') {
+      // 텍스트 파일
+      dialogOptions.filters = [
+        { name: '텍스트 파일', extensions: ['txt', 'md', 'json', 'csv', 'xml'] },
+        { name: '코드 파일', extensions: ['js', 'ts', 'py', 'html', 'css', 'java', 'c', 'cpp', 'php'] },
+        { name: '모든 파일', extensions: ['*'] }
+      ];
+    } else if (options.type === 'image') {
+      // 이미지 파일
+      dialogOptions.filters = [
+        { name: '이미지 파일', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'] },
+        { name: '모든 파일', extensions: ['*'] }
+      ];
+    } else {
+      // 기본 필터
+      dialogOptions.filters = [
+        { name: '실행 파일', extensions: ['exe'] },
+        { name: '모든 파일', extensions: ['*'] }
+      ];
+    }
+    
+    // 대화상자 표시
+    dialog.showOpenDialog(mainWindow, dialogOptions).then(result => {
       if (!result.canceled && result.filePaths.length > 0) {
-        event.reply('selected-file', result.filePaths[0]);
+        const filePath = result.filePaths[0];
+        
+        // 파일 내용을 명령어로 변환 요청
+        if (options.processToCommand) {
+          commandProcessor.processFileToCommand(filePath)
+            .then(commandText => {
+              event.reply('file-processed-to-command', { 
+                success: true, 
+                filePath,
+                command: commandText
+              });
+            })
+            .catch(err => {
+              console.error('파일 처리 오류:', err);
+              event.reply('file-processed-to-command', { 
+                success: false, 
+                filePath,
+                error: err.message
+              });
+            });
+        } else {
+          // 일반 파일 선택 결과 반환
+          event.reply('selected-file', filePath);
+        }
       }
     }).catch(err => {
       console.error('파일 대화상자 오류:', err);
+      
+      if (options.processToCommand) {
+        event.reply('file-processed-to-command', { 
+          success: false, 
+          error: err.message
+        });
+      }
     });
   });
   

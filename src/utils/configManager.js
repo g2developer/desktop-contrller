@@ -43,6 +43,28 @@ let store;
 function init(configStore) {
   store = configStore;
   
+  // 저장소 상태 확인
+  if (!store) {
+    console.error('설정 저장소가 없습니다. 새 Store 객체를 생성합니다.');
+    const Store = require('electron-store');
+    store = new Store();
+  }
+  
+  // Store 이상 확인
+  try {
+    const testKey = 'test_config_manager';
+    store.set(testKey, { test: true, timestamp: new Date().toISOString() });
+    const testValue = store.get(testKey);
+    if (!testValue || !testValue.test) {
+      console.error('설정 저장소 설정/가져오기 테스트 실패');
+    } else {
+      console.log('설정 저장소 정상 동작:', testValue);
+      store.delete(testKey); // 테스트 키 삭제
+    }
+  } catch (err) {
+    console.error('설정 저장소 동작 테스트 오류:', err);
+  }
+  
   // 기본 설정 확인 및 설정
   initializeDefaultSettings();
 }
@@ -134,7 +156,19 @@ function initializeDefaultSettings() {
  * @returns {any} 설정 값
  */
 function getSetting(key, defaultValue) {
-  return store.get(key, defaultValue);
+  try {
+    if (!store) {
+      console.error(`설정 가져오기 실패 (${key}): 저장소가 초기화되지 않았습니다.`);
+      return defaultValue;
+    }
+    
+    const value = store.get(key, defaultValue);
+    console.log(`설정 가져오기 (${key}):`, value);
+    return value;
+  } catch (err) {
+    console.error(`설정 가져오기 오류 (${key}):`, err);
+    return defaultValue;
+  }
 }
 
 /**
@@ -145,10 +179,27 @@ function getSetting(key, defaultValue) {
  */
 function setSetting(key, value) {
   try {
+    if (!store) {
+      console.error(`설정 저장 실패 (${key}): 저장소가 초기화되지 않았습니다.`);
+      return false;
+    }
+    
+    console.log(`설정 저장 시도 (${key}):`, value);
     store.set(key, value);
-    return true;
+    
+    // 저장 완료 후 값을 다시 확인하여 성공 여부 확인
+    const savedValue = store.get(key);
+    const success = savedValue !== undefined && JSON.stringify(savedValue) === JSON.stringify(value);
+    
+    if (success) {
+      console.log(`설정 저장 성공 (${key}):`, savedValue);
+    } else {
+      console.error(`설정 저장 확인 실패 (${key}): 저장된 값이 일치하지 않습니다.`, { saved: savedValue, expected: value });
+    }
+    
+    return success;
   } catch (err) {
-    console.error('설정 저장 오류:', err);
+    console.error(`설정 저장 오류 (${key}):`, err);
     return false;
   }
 }

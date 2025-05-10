@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const socketManager = require('./socketManager');
-const logger = require('../utils/logger');
+const logManager = require('../utils/logManager');
 const { DEFAULT_SERVER_PORT } = require('../utils/configManager'); // 상수 가져오기
 
 let expressApp;
@@ -135,6 +135,8 @@ function startServer() {
     // 설정에서 포트 가져오기
     const port = store.get('serverPort') || DEFAULT_SERVER_PORT;
     
+    console.log(`서버 시작 시도... 포트: ${port}`);
+    
     // 서버 시작 - 0.0.0.0으로 마운트하여 가능한 모든 네트워크 인터페이스에서 접속 가능하게 설정
     server.listen(port, '0.0.0.0', () => {
       const os = require('os');
@@ -163,14 +165,14 @@ function startServer() {
       });
       
       // 서버 시작 정보 로깅
-      logger.log('===== 서버 시작 정보 =====');
-      logger.log(`서버가 포트 ${port}에서 실행 중입니다`);
-      logger.log(`기본 연결 주소: ${localIp}:${port}`);
-      logger.log('\n사용 가능한 모든 연결 주소:');
+      logManager.info('===== 서버 시작 정보 =====');
+      logManager.info(`서버가 포트 ${port}에서 실행 중입니다`);
+      logManager.info(`기본 연결 주소: ${localIp}:${port}`);
+      logManager.info('\n사용 가능한 모든 연결 주소:');
       
       // 모든 사용 가능한 주소 출력
       allAddresses.forEach(addr => {
-        logger.log(`- ${addr.name}: ${addr.address}:${port} ${addr.internal ? '(내부)' : ''}`);
+        logManager.info(`- ${addr.name}: ${addr.address}:${port} ${addr.internal ? '(내부)' : ''}`);
       });
       
       console.log('===== 서버 시작 완료 =====');
@@ -198,7 +200,7 @@ function startServer() {
     
     return true;
   } catch (err) {
-    logger.error('서버 시작 오류:', err);
+    logManager.error('서버 시작 오류:', err);
     return false;
   }
 }
@@ -220,7 +222,7 @@ function stopServer() {
     
     // 서버 종료
     server.close(() => {
-      logger.log('서버가 종료되었습니다.');
+      logManager.info('서버가 종료되었습니다.');
       isServerRunning = false;
       
       // 연결된 클라이언트 목록 초기화
@@ -240,7 +242,7 @@ function stopServer() {
     
     return true;
   } catch (err) {
-    logger.error('서버 종료 오류:', err);
+    logManager.error('서버 종료 오류:', err);
     return false;
   }
 }

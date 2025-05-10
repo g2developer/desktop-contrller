@@ -1,0 +1,3 @@
+@echo off
+echo PowerShell 인코딩을 UTF-8로 설정하고 프로덕션 모드로 애플리케이션을 시작합니다...
+powershell -Command "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; cd '%~dp0..'; npm run start"

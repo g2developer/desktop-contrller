@@ -1,41 +1,58 @@
 {
   "name": "desktop-controller",
   "version": "1.0.0",
-  "description": "Desktop controller application (server)",
+  "description": "Desktop Controller Application for Remote Control",
   "main": "main.js",
   "scripts": {
-    "start": "set LANG=ko_KR.UTF-8 && chcp 65001 && electron .",
-    "dev": "set LANG=ko_KR.UTF-8 && chcp 65001 && electron . --dev",
+    "start": "node start-console.js",
+    "dev": "node start-console.js --dev",
+    "dev:utf8": "node scripts/fix-powershell-encoding.js",
+    "start:utf8": "powershell -Command \"$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; npm run start\"",
     "build": "electron-builder",
-    "postinstall": "electron-builder install-app-deps"
+    "test": "node ../test/socketTest.js",
+    "test:socket": "node ../test/socketTest.js",
+    "test:auth": "node ../test/authTest.js",
+    "fix:encoding": "node scripts/fix-powershell-encoding.js"
   },
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "desktop",
+    "control",
+    "remote",
+    "claude"
+  ],
+  "author": "Desktop Control Team",
+  "license": "MIT",
   "dependencies": {
-    "@jitsi/robotjs": "^0.6.16",
+    "@jitsi/robotjs": "^0.6.11",
+    "electron-log": "^5.4.0",
     "electron-store": "^8.1.0",
     "express": "^4.18.2",
     "iconv-lite": "^0.6.3",
-    "public-ip": "^7.0.1",
-    "screenshot-desktop": "^1.12.7",
-    "socket.io": "^4.6.1"
+    "screenshot-desktop": "^1.15.0",
+    "sharp": "^0.33.2",
+    "socket.io": "^4.7.4"
   },
   "devDependencies": {
-    "electron": "^25.3.1",
-    "electron-builder": "^24.4.0",
-    "nodemon": "^2.0.22"
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.0"
   },
   "build": {
-    "appId": "com.desktop.controller",
+    "appId": "com.desktopctrler.app",
     "productName": "Desktop Controller",
     "directories": {
       "output": "dist"
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        "nsis"
+      ],
+      "icon": "src/assets/app-icon.ico"
     },
     "mac": {
-      "target": "dmg"
+      "target": [
+        "dmg"
+      ],
+      "icon": "src/assets/app-icon.icns"
     }
   }
 }

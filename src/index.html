@@ -4,504 +4,486 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>데스크탑 컨트롤러</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app-container">
-    <!-- 사이드바 -->
-    <aside class="sidebar">
+    <!-- 사이드바 (네비게이션) -->
+    <div class="sidebar">
       <div class="app-logo">
-        <span class="icon" style="font-size: 24px;">🖥️</span>
-        <h1>데스크탑 컨트롤러</h1>
+        <img src="assets/images/app-logo.png" alt="로고" id="app-logo" onerror="this.style.display='none'">
+        <h2>Desktop Controller</h2>
       </div>
-      
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="#" class="nav-link active" data-tab="dashboard">
-            <span class="icon">📊</span>
-            대시보드
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" data-tab="capture">
-            <span class="icon">📷</span>
-            화면 캡처
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" data-tab="users">
-            <span class="icon">👥</span>
-            사용자 관리
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" data-tab="commands">
-            <span class="icon">🔍</span>
-            명령 이력
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" data-tab="settings">
-            <span class="icon">⚙️</span>
-            설정
-          </a>
-        </li>
-      </ul>
-      
-      <div class="server-status">
-        <div class="status-title">서버 상태</div>
-        <div class="status-info">
-          <span class="status-badge online"></span>
-          <span class="status-text">실행 중</span>
-        </div>
-        <div class="status-info">
-          <span class="status-text">포트: <span id="server-port">8000</span></span>
-        </div>
-        <div class="status-info">
-          <span class="status-text">IP: <span id="server-ip">192.168.0.10</span></span>
-        </div>
-      </div>
-    </aside>
-    
-    <!-- 헤더 -->
-    <header class="header">
-      <h2 class="page-title">대시보드</h2>
-      <div class="header-actions">
-        <button class="btn btn-outline" id="refresh-btn">
-          <span class="icon">🔄</span> 새로고침
-        </button>
-        <button class="btn btn-primary" id="start-server-btn" style="margin-left: 8px;">
-          <span class="icon">▶️</span> <span id="server-action-text">서버 시작</span>
+      <nav class="nav-menu">
+        <ul>
+          <li class="nav-item active" data-page="dashboard">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            <span>대시보드</span>
+          </li>
+          <li class="nav-item" data-page="users">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>사용자 관리</span>
+          </li>
+          <li class="nav-item" data-page="capture">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+            <span>캡처 설정</span>
+          </li>
+          <li class="nav-item" data-page="logs">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <span>활동 로그</span>
+          </li>
+          <li class="nav-item" data-page="settings">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <span>설정</span>
+          </li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="server-toggle" class="btn server-btn">
+          <span id="server-status-icon" class="status-icon offline"></span>
+          <span id="server-status-text">서버 시작</span>
         </button>
       </div>
-    </header>
-    
-    <!-- 메인 콘텐츠 영역 -->
-    <main class="main">
-      <!-- 대시보드 탭 -->
-      <section id="dashboard" class="tab-content active">
-        <div class="dashboard-stats">
-          <div class="stat-card">
-            <div class="stat-title">연결된 클라이언트</div>
-            <div class="stat-value"><span id="client-count">0</span></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-title">오늘 총 명령 수</div>
-            <div class="stat-value"><span id="command-count">0</span></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-title">활성 사용자</div>
-            <div class="stat-value"><span id="active-users">0</span></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-title">서버 가동 시간</div>
-            <div class="stat-value"><span id="uptime">00:00:00</span></div>
-          </div>
+    </div>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="main-content">
+      <!-- 상단 헤더 -->
+      <header class="header">
+        <div class="header-title">
+          <h1 id="page-title">대시보드</h1>
         </div>
-        
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">연결된 디바이스</h3>
-              <button class="btn btn-outline btn-sm" id="refresh-clients-btn">새로고침</button>
-            </div>
-            <div class="card-body">
-              <div class="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>사용자</th>
-                      <th>디바이스</th>
-                      <th>IP 주소</th>
-                      <th>상태</th>
-                      <th>연결 시간</th>
-                      <th>액션</th>
-                    </tr>
-                  </thead>
-                  <tbody id="clients-list">
-                    <!-- 자바스크립트로 동적 추가 -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
+        <div class="header-actions">
+          <div class="server-info">
+            <span class="server-label">상태:</span>
+            <span id="server-info-status" class="server-status">오프라인</span>
           </div>
-          
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">최근 활동</h3>
-            </div>
-            <div class="card-body">
-              <div class="activity-log" id="activity-log">
-                <!-- 자바스크립트로 동적 추가 -->
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">클라이언트 연결 정보</h3>
-          </div>
-          <div class="card-body">
-            <div class="grid-2">
-              <div class="qr-code-container">
-                <h4>QR 코드 연결</h4>
-                <p>모바일 앱에서 QR 코드를 스캔하여 연결하세요.</p>
-                <div id="qrcode" style="width: 200px; height: 200px; margin: 20px auto; background-color: #f9f9f9; display: flex; align-items: center; justify-content: center;">
-                  QR 코드 영역
-                </div>
-              </div>
-              
-              <div class="manual-connection">
-                <h4>수동 연결</h4>
-                <p>아래 주소를 모바일 앱에 직접 입력하세요.</p>
-                <div class="form-group">
-                  <div class="input-with-button">
-                    <input type="text" class="form-control" value="http://192.168.0.10:8000" readonly id="connection-url">
-                    <button class="btn btn-outline" id="copy-url-btn">복사</button>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">연결 상태</label>
-                  <div class="status-info">
-                    <span class="status-badge online"></span>
-                    <span class="status-text">서버 실행 중</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <!-- 화면 캡처 탭 -->
-      <section id="capture" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">AI 응답 화면 캡처</h3>
-          </div>
-          <div class="card-body">
-            <div class="grid-2">
-              <div>
-                <div class="form-group">
-                  <label class="form-label">캡처 영역 설정</label>
-                  <p>클로드 앱의 AI 응답 영역을 선택하세요.</p>
-                  <div class="form-group">
-                    <button class="btn btn-primary" id="select-area-btn">
-                      <span class="icon">📏</span> 영역 선택
-                    </button>
-                    <button class="btn btn-outline" id="test-capture-btn">
-                      <span class="icon">📷</span> 테스트 캡처
-                    </button>
-                  </div>
-                </div>
-                
-                <div class="form-group">
-                  <label class="form-label">캡처 설정</label>
-                  <div class="form-group">
-                    <label class="form-checkbox">
-                      <input type="checkbox" id="auto-capture" checked> 명령 실행 후 자동 캡처
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-checkbox">
-                      <input type="checkbox" id="auto-send" checked> 캡처 후 자동 전송
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">이미지 품질</label>
-                    <select class="form-control" id="image-quality">
-                      <option value="high">높음 (원본)</option>
-                      <option value="medium" selected>중간 (압축)</option>
-                      <option value="low">낮음 (빠른 전송)</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="capture-preview">
-                <img src="" alt="캡처 미리보기" class="capture-image" id="capture-preview-img" style="display: none;">
-                <div class="capture-placeholder" id="capture-placeholder">
-                  <span class="icon" style="font-size: 48px; margin-bottom: 16px;">📷</span>
-                  <p>캡처된 화면이 여기에 표시됩니다.<br>테스트 캡처 버튼을 클릭하여 미리보기를 확인하세요.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">최근 캡처된 화면</h3>
-          </div>
-          <div class="card-body">
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>시간</th>
-                    <th>명령어</th>
-                    <th>크기</th>
-                    <th>전송 상태</th>
-                    <th>액션</th>
-                  </tr>
-                </thead>
-                <tbody id="captures-list">
-                  <!-- 자바스크립트로 동적 추가 -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <!-- 사용자 관리 탭 -->
-      <section id="users" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">사용자 목록</h3>
-            <button class="btn btn-primary" id="add-user-btn">
-              <span class="icon">➕</span> 사용자 추가
+          <div class="server-ip" id="server-ip-container" style="display: none;">
+            <span class="server-label">서버 주소:</span>
+            <span id="server-ip">-</span>
+            <button id="copy-ip" class="btn-icon" title="주소 복사">
+              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             </button>
           </div>
-          <div class="card-body">
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>아이디</th>
-                    <th>이름</th>
-                    <th>마지막 접속</th>
-                    <th>상태</th>
-                    <th>액션</th>
-                  </tr>
-                </thead>
-                <tbody id="users-list">
-                  <!-- 자바스크립트로 동적 추가 -->
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
-      </section>
-      
-      <!-- 명령 이력 탭 -->
-      <section id="commands" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">명령 이력</h3>
-            <div>
-              <button class="btn btn-outline" id="stats-btn">
-                <span class="icon">📊</span> 통계 보기
-              </button>
-              <button class="btn btn-outline" id="clear-commands-btn" style="margin-left: 8px;">
-                <span class="icon">🗑️</span> 기록 삭제
-              </button>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="form-group">
-              <div class="input-with-button">
-                <input type="text" class="form-control" placeholder="명령어 검색..." id="command-search">
-                <button class="btn btn-outline" id="search-btn">검색</button>
+      </header>
+
+      <!-- 페이지 컨텐츠 영역 -->
+      <div class="page-content">
+        <!-- 대시보드 페이지 -->
+        <div class="page" id="dashboard-page">
+          <div class="dashboard-grid">
+            <!-- 서버 상태 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>서버 상태</h3>
               </div>
-            </div>
-            
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>시간</th>
-                    <th>사용자</th>
-                    <th>명령어</th>
-                    <th>처리 상태</th>
-                    <th>응답 시간</th>
-                    <th>액션</th>
-                  </tr>
-                </thead>
-                <tbody id="commands-list">
-                  <!-- 자바스크립트로 동적 추가 -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="card-footer">
-            <div class="pagination">
-              <button class="btn btn-outline" id="prev-page">이전</button>
-              <span class="page-info">1 / 1 페이지</span>
-              <button class="btn btn-outline" id="next-page">다음</button>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <!-- 설정 탭 -->
-      <section id="settings" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">서버 설정</h3>
-          </div>
-          <div class="card-body">
-            <form id="server-settings-form">
-              <div class="form-group">
-                <label class="form-label" for="server-port-input">서버 포트</label>
-                <input type="number" class="form-control" id="server-port-input" value="8000" min="1024" max="65535">
-                <small>1024-65535 사이의 포트 번호를 입력하세요.</small>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="timeout">소켓 연결 시간 제한 (초)</label>
-                <input type="number" class="form-control" id="timeout" value="30" min="10" max="300">
-              </div>
-              <div class="form-group">
-                <label class="form-checkbox">
-                  <input type="checkbox" id="auto-start" checked> 프로그램 시작 시 서버 자동 실행
-                </label>
-              </div>
-            </form>
-          </div>
-        </div>
-        
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">클로드 앱 설정</h3>
-          </div>
-          <div class="card-body">
-            <form id="claude-settings-form">
-              <div class="form-group">
-                <label class="form-label" for="claude-path">클로드 앱 경로</label>
-                <div class="input-with-button">
-                  <input type="text" class="form-control" id="claude-path" placeholder="클로드 앱 실행 파일 경로">
-                  <button class="btn btn-outline" id="browse-btn">찾아보기</button>
+              <div class="card-content">
+                <div class="status-indicator">
+                  <div class="status-icon-large" id="server-status-indicator"></div>
+                  <div class="status-text" id="server-status-message">서버가 중지되었습니다</div>
+                </div>
+                <div class="server-stats">
+                  <div class="stat-item">
+                    <span class="stat-label">연결 클라이언트</span>
+                    <span class="stat-value" id="client-count">0</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">IP 주소</span>
+                    <span class="stat-value" id="server-ip-address">-</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">포트</span>
+                    <span class="stat-value" id="server-port">-</span>
+                  </div>
+                </div>
+                <div class="server-actions">
+                  <button id="start-server-btn" class="btn primary">서버 시작</button>
+                  <button id="stop-server-btn" class="btn" disabled>서버 중지</button>
                 </div>
               </div>
-              <div class="form-group">
-                <label class="form-label">실행 옵션</label>
-                <label class="form-checkbox">
-                  <input type="checkbox" id="auto-launch" checked> 명령 수신 시 클로드 앱 자동 실행
-                </label>
-                <label class="form-checkbox">
-                  <input type="checkbox" id="auto-capture-after" checked> 응답 후 자동으로 화면 캡처
-                </label>
+            </div>
+
+            <!-- 연결된 클라이언트 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>연결된 클라이언트</h3>
+                <button id="refresh-clients" class="btn-icon" title="새로고침">
+                  <svg viewBox="0 0 24 24" width="16" height="16"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                </button>
               </div>
-              <div class="form-group">
-                <label class="form-label" for="capture-delay">화면 캡처 지연 시간 (초)</label>
-                <input type="number" class="form-control" id="capture-delay" value="2" min="0" max="10">
-                <small>AI 응답 완료 후 화면 캡처까지의 지연 시간</small>
+              <div class="card-content">
+                <div class="client-list-container">
+                  <div class="client-list-header">
+                    <div class="client-col id">ID</div>
+                    <div class="client-col device">기기</div>
+                    <div class="client-col status">상태</div>
+                    <div class="client-col actions">작업</div>
+                  </div>
+                  <div class="client-list" id="client-list">
+                    <!-- 클라이언트 목록이 여기에 동적으로 추가됩니다 -->
+                    <div class="empty-list-message">연결된 클라이언트가 없습니다</div>
+                  </div>
+                </div>
               </div>
-            </form>
+            </div>
+
+            <!-- 최근 활동 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>최근 활동</h3>
+                <button id="clear-logs" class="btn-icon" title="로그 지우기">
+                  <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+              </div>
+              <div class="card-content">
+                <div class="activity-log" id="activity-log">
+                  <!-- 활동 로그가 여기에 동적으로 추가됩니다 -->
+                  <div class="empty-list-message">활동 내역이 없습니다</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 이전 명령어 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>최근 명령어</h3>
+              </div>
+              <div class="card-content">
+                <div class="command-history" id="command-history">
+                  <!-- 명령어 기록이 여기에 동적으로 추가됩니다 -->
+                  <div class="empty-list-message">명령어 기록이 없습니다</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">보안 설정</h3>
+
+        <!-- 사용자 관리 페이지 -->
+        <div class="page hidden" id="users-page">
+          <div class="page-toolbar">
+            <h2>사용자 관리</h2>
+            <button id="add-user-btn" class="btn primary">
+              <svg class="icon-small" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              사용자 추가
+            </button>
           </div>
-          <div class="card-body">
-            <form id="security-settings-form">
-              <div class="form-group">
-                <label class="form-label" for="session-timeout">로그인 시간 제한 (분)</label>
-                <input type="number" class="form-control" id="session-timeout" value="30" min="5" max="120">
-                <small>세션 유지 시간을 설정합니다.</small>
-              </div>
-              <div class="form-group">
-                <label class="form-label">비밀번호 정책</label>
-                <label class="form-checkbox">
-                  <input type="checkbox" id="pwd-length" checked> 최소 8자 이상 필요
-                </label>
-                <label class="form-checkbox">
-                  <input type="checkbox" id="pwd-numbers" checked> 숫자 포함 필요
-                </label>
-                <label class="form-checkbox">
-                  <input type="checkbox" id="pwd-special"> 특수문자 포함 필요
-                </label>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="login-attempts">로그인 시도 제한</label>
-                <input type="number" class="form-control" id="login-attempts" value="5" min="1" max="10">
-                <small>최대 로그인 시도 횟수</small>
-              </div>
-            </form>
+          <div class="user-list-container">
+            <div class="user-list-header">
+              <div class="user-col id">ID</div>
+              <div class="user-col name">이름</div>
+              <div class="user-col role">권한</div>
+              <div class="user-col status">상태</div>
+              <div class="user-col actions">작업</div>
+            </div>
+            <div class="user-list" id="user-list">
+              <!-- 사용자 목록이 여기에 동적으로 추가됩니다 -->
+              <div class="empty-list-message">사용자 데이터를 불러오는 중...</div>
+            </div>
           </div>
         </div>
-        
-        <div class="form-group" style="margin-top: 24px; text-align: right;">
-          <button class="btn btn-primary" id="save-settings">설정 저장</button>
-          <button class="btn btn-outline" id="reset-settings">초기화</button>
+
+        <!-- 캡처 설정 페이지 -->
+        <div class="page hidden" id="capture-page">
+          <div class="page-toolbar">
+            <h2>캡처 설정</h2>
+            <button id="select-capture-area-btn" class="btn primary">
+              <svg class="icon-small" viewBox="0 0 24 24"><path d="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z"/></svg>
+              캡처 영역 선택
+            </button>
+          </div>
+          <div class="capture-settings-grid">
+            <!-- 현재 캡처 영역 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>현재 캡처 영역</h3>
+              </div>
+              <div class="card-content">
+                <div class="capture-preview-container">
+                  <div class="capture-preview" id="capture-preview">
+                    <div class="capture-overlay"></div>
+                    <div class="capture-area" id="capture-area-preview"></div>
+                  </div>
+                </div>
+                <div class="capture-area-info">
+                  <div class="info-item">
+                    <span class="info-label">X 좌표:</span>
+                    <span class="info-value" id="capture-x">0</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Y 좌표:</span>
+                    <span class="info-value" id="capture-y">0</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">너비:</span>
+                    <span class="info-value" id="capture-width">0</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">높이:</span>
+                    <span class="info-value" id="capture-height">0</span>
+                  </div>
+                </div>
+                <div class="capture-actions">
+                  <button id="test-capture-btn" class="btn">테스트 캡처</button>
+                  <button id="auto-detect-btn" class="btn">자동 감지</button>
+                  <button id="reset-capture-area-btn" class="btn">초기화</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 캡처 설정 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>캡처 설정</h3>
+              </div>
+              <div class="card-content">
+                <div class="settings-form">
+                  <div class="form-group">
+                    <label for="capture-quality">캡처 품질</label>
+                    <select id="capture-quality" class="form-control">
+                      <option value="high">고품질</option>
+                      <option value="medium" selected>중간</option>
+                      <option value="low">저품질 (빠름)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="capture-delay">캡처 지연 시간 (초)</label>
+                    <input type="number" id="capture-delay" class="form-control" min="0" max="10" step="0.5" value="2">
+                  </div>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="auto-capture" checked>
+                      <span>명령 후 자동 캡처</span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="auto-send" checked>
+                      <span>자동 전송</span>
+                    </label>
+                  </div>
+                </div>
+                <button id="save-capture-settings" class="btn primary">설정 저장</button>
+              </div>
+            </div>
+
+            <!-- 최근 캡처 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>최근 캡처</h3>
+              </div>
+              <div class="card-content">
+                <div class="recent-captures" id="recent-captures">
+                  <!-- 최근 캡처 목록이 여기에 동적으로 추가됩니다 -->
+                  <div class="empty-list-message">최근 캡처가 없습니다</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
+
+        <!-- 활동 로그 페이지 -->
+        <div class="page hidden" id="logs-page">
+          <div class="page-toolbar">
+            <h2>활동 로그</h2>
+            <div class="toolbar-actions">
+              <div class="dropdown">
+                <button class="btn dropdown-toggle" id="log-filter-btn">
+                  모든 로그
+                  <svg class="icon-small" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                </button>
+                <div class="dropdown-menu hidden" id="log-filter-menu">
+                  <a class="dropdown-item active" data-filter="all">모든 로그</a>
+                  <a class="dropdown-item" data-filter="connection">연결</a>
+                  <a class="dropdown-item" data-filter="login">로그인</a>
+                  <a class="dropdown-item" data-filter="command">명령어</a>
+                  <a class="dropdown-item" data-filter="error">오류</a>
+                </div>
+              </div>
+              <button id="export-logs-btn" class="btn">
+                <svg class="icon-small" viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/></svg>
+                로그 내보내기
+              </button>
+              <button id="clear-all-logs-btn" class="btn">
+                <svg class="icon-small" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                로그 지우기
+              </button>
+            </div>
+          </div>
+          <div class="logs-container">
+            <div class="log-list-header">
+              <div class="log-col time">시간</div>
+              <div class="log-col type">유형</div>
+              <div class="log-col message">메시지</div>
+            </div>
+            <div class="log-list" id="full-activity-log">
+              <!-- 로그 목록이 여기에 동적으로 추가됩니다 -->
+              <div class="empty-list-message">활동 로그가 없습니다</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 설정 페이지 -->
+        <div class="page hidden" id="settings-page">
+          <div class="page-toolbar">
+            <h2>설정</h2>
+            <button id="save-all-settings" class="btn primary">모든 설정 저장</button>
+          </div>
+          <div class="settings-container">
+            <!-- 서버 설정 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>서버 설정</h3>
+              </div>
+              <div class="card-content">
+                <div class="settings-form">
+                  <div class="form-group">
+                    <label for="server-port">포트 번호</label>
+                    <input type="number" id="server-port-input" class="form-control" min="1024" max="65535" value="8000">
+                    <p class="form-hint">1024 ~ 65535 사이의 값을 입력하세요.</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="auto-start-server">
+                      <span>앱 시작 시 서버 자동 시작</span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="minimize-to-tray">
+                      <span>최소화 시 트레이로 이동</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 클로드 앱 설정 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>클로드 앱 설정</h3>
+              </div>
+              <div class="card-content">
+                <div class="settings-form">
+                  <div class="form-group">
+                    <label for="claude-path">클로드 앱 경로</label>
+                    <div class="input-with-button">
+                      <input type="text" id="claude-path" class="form-control" readonly>
+                      <button id="select-claude-path" class="btn">찾아보기</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <button id="test-claude-btn" class="btn">클로드 앱 연결 테스트</button>
+                  </div>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="use-clipboard-input" checked>
+                      <span>클립보드를 통한 명령 입력 (한글 호환성 향상)</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 명령어 설정 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>명령어 설정</h3>
+              </div>
+              <div class="card-content">
+                <div class="settings-form">
+                  <div class="form-group">
+                    <label for="max-command-length">최대 명령어 길이</label>
+                    <input type="number" id="max-command-length" class="form-control" min="100" max="100000" value="10000">
+                    <p class="form-hint">너무 긴 명령어는 잘립니다.</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="max-history">명령어 기록 최대 개수</label>
+                    <input type="number" id="max-history" class="form-control" min="5" max="1000" value="100">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 모듈 설정 카드 -->
+            <div class="card">
+              <div class="card-header">
+                <h3>모듈 설정</h3>
+              </div>
+              <div class="card-content">
+                <div class="settings-form">
+                  <div class="form-group">
+                    <label for="log-level">로그 레벨</label>
+                    <select id="log-level" class="form-control">
+                      <option value="error">오류만</option>
+                      <option value="warn">경고</option>
+                      <option value="info" selected>정보</option>
+                      <option value="debug">디버그</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="log-retention">로그 보관 기간 (일)</label>
+                    <input type="number" id="log-retention" class="form-control" min="1" max="30" value="7">
+                  </div>
+                  <div class="form-group">
+                    <button id="export-settings-btn" class="btn">설정 내보내기</button>
+                    <button id="import-settings-btn" class="btn">설정 가져오기</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
-    
-    <!-- 푸터 -->
-    <footer class="footer">
-      <p>&copy; 2024 데스크탑 컨트롤러. 모든 권리 보유.</p>
-    </footer>
   </div>
-  
-  <!-- 사용자 추가/수정 모달 -->
-  <div class="modal" id="user-modal">
+
+  <!-- 모달 컴포넌트 -->
+  <div class="modal" id="modal-container">
+    <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title" id="modal-title">사용자 추가</h3>
-        <button class="modal-close">&times;</button>
+        <h3 id="modal-title">제목</h3>
+        <button class="modal-close-btn">&times;</button>
       </div>
-      <div class="modal-body">
-        <form id="user-form">
-          <div class="form-group">
-            <label class="form-label" for="user-id">아이디</label>
-            <input type="text" class="form-control" id="user-id" placeholder="사용자 아이디" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="user-name">이름</label>
-            <input type="text" class="form-control" id="user-name" placeholder="사용자 이름" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="user-password">비밀번호</label>
-            <input type="password" class="form-control" id="user-password" placeholder="비밀번호" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="user-password-confirm">비밀번호 확인</label>
-            <input type="password" class="form-control" id="user-password-confirm" placeholder="비밀번호 확인" required>
-          </div>
-        </form>
+      <div class="modal-body" id="modal-body">
+        <!-- 모달 내용이 여기에 동적으로 삽입됩니다 -->
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="save-user">저장</button>
-        <button class="btn btn-outline" id="cancel-user">취소</button>
+      <div class="modal-footer" id="modal-footer">
+        <!-- 모달 푸터 버튼이 여기에 동적으로 삽입됩니다 -->
+        <button class="btn" id="modal-cancel-btn">취소</button>
+        <button class="btn primary" id="modal-confirm-btn">확인</button>
       </div>
     </div>
   </div>
-  
-  <!-- 명령 결과 보기 모달 -->
-  <div class="modal" id="command-result-modal">
-    <div class="modal-content" style="max-width: 600px;">
-      <div class="modal-header">
-        <h3 class="modal-title">AI 응답 결과</h3>
-        <button class="modal-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">명령어</label>
-          <div class="claude-command" id="result-command"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">응답 결과</label>
-          <div class="claude-response" id="result-response"></div>
-        </div>
-        <div class="claude-controls">
-          <button class="btn btn-outline" id="copy-result">
-            <span class="icon">📋</span> 복사
-          </button>
-          <button class="btn btn-outline" id="download-result">
-            <span class="icon">⤵️</span> 다운로드
-          </button>
-          <button class="btn btn-outline" id="resend-result">
-            <span class="icon">📤</span> 재전송
-          </button>
-        </div>
-      </div>
-    </div>
+
+  <!-- 토스트 메시지 컴포넌트 -->
+  <div class="toast-container" id="toast-container">
+    <!-- 토스트 메시지가 여기에 동적으로 추가됩니다 -->
   </div>
   
-  <script src="./renderer.js"></script>
+  <!-- 디버깅 버튼 -->
+  <div class="debug-tools" style="position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
+    <button onclick="window.electronAPI.openDevTools()" style="padding: 5px 10px; background: #333; color: white; border: none; border-radius: 3px; cursor: pointer;">
+      개발자 도구
+    </button>
+  </div>
+
+  <!-- 캡처 영역 선택 오버레이 -->
+  <div class="capture-overlay" id="capture-selector-overlay" style="display: none;">
+    <div class="overlay-instructions">
+      <h3>캡처 영역 선택</h3>
+      <p>마우스를 드래그하여 캡처할 영역을 선택하세요.</p>
+      <p><strong>Esc</strong> 키를 눌러 취소하거나 <strong>Enter</strong> 키를 눌러 선택을 완료하세요.</p>
+    </div>
+    <div class="capture-selection" id="capture-selection"></div>
+  </div>
+
+  <!-- 스크립트 -->
+  <script src="renderer.js"></script>
+  <!-- 디버깅용 스크립트 -->
+  <script src="debug.js"></script>
+  <!-- 서버 중지 버튼 문제 해결을 위한 패치 스크립트 -->
+  <script src="direct-fix.js"></script>
 </body>
 </html>
